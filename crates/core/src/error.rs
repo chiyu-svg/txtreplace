@@ -12,6 +12,9 @@ pub enum Error {
     #[error("旧文本不能为空")]
     EmptyNeedle,
 
+    #[error("至少选择一种文件类型")]
+    NoFileKind,
+
     #[error("`{}` 不是目录", .0.display())]
     NotDirectory(PathBuf),
 

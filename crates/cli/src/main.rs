@@ -6,7 +6,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use txtreplace_core::{EntryStatus, Error, Mode, Report, replace, restore};
+use txtreplace_core::{EntryStatus, Error, FileKind, Mode, Report, replace, restore};
 
 const USAGE: &str = "\
 用法:
@@ -102,7 +102,7 @@ impl Cli {
                 write,
             } => {
                 let mode = if write { Mode::Apply } else { Mode::Preview };
-                let report = replace(&dir, &old, &new, mode)?;
+                let report = replace(&dir, &old, &new, mode, &FileKind::ALL)?;
                 print_replace_report(&report, &old, &new, write);
                 Ok(report)
             }

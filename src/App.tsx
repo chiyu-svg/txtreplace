@@ -8,13 +8,20 @@ import {
   previewReplace,
   restoreBackups,
 } from "./api";
-import type { Report, TaskPhase } from "./api";
+import type { FileKind, Report, TaskPhase } from "./api";
 import ConfirmDialog from "./components/ConfirmDialog";
 import type { ConfirmState } from "./components/ConfirmDialog";
 import ResultPanel from "./components/ResultPanel";
 
+const TYPE_OPTIONS: { id: FileKind; label: string }[] = [
+  { id: "txt", label: "纯文本" },
+  { id: "docx", label: "Word 文档" },
+  { id: "xlsx", label: "Excel 表格" },
+];
+
 export default function App() {
   const [directory, setDirectory] = useState("");
+  const [kinds, setKinds] = useState<FileKind[]>(["txt", "docx", "xlsx"]);
   const [needle, setNeedle] = useState("");
   const [replacement, setReplacement] = useState("");
   const [report, setReport] = useState<Report | null>(null);
@@ -24,12 +31,14 @@ export default function App() {
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
 
   const currentKey = useMemo(
-    () => `${directory}\u0000${needle}\u0000${replacement}`,
-    [directory, needle, replacement],
+    () =>
+      `${directory}\u0000${needle}\u0000${replacement}\u0000${kinds.join(",")}`,
+    [directory, needle, replacement, kinds],
   );
 
   const stale = report?.operation === "preview" && previewKey !== currentKey;
-  const canPreview = directory.trim() !== "" && needle.length > 0 && phase === null;
+  const canPreview =
+    directory.trim() !== "" && needle.length > 0 && kinds.length > 0 && phase === null;
   const canApply =
     report !== null &&
     report.operation === "preview" &&
@@ -56,6 +65,14 @@ export default function App() {
     }
   }
 
+  function toggleKind(kind: FileKind) {
+    setKinds((current) =>
+      current.includes(kind)
+        ? current.filter((item) => item !== kind)
+        : [...current, kind],
+    );
+  }
+
   async function handlePreview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canPreview) return;
@@ -63,7 +80,7 @@ export default function App() {
     setPhase("preview");
     setError(null);
     try {
-      const next = await previewReplace(directory, needle, replacement);
+      const next = await previewReplace(directory, needle, replacement, kinds);
       setReport(next);
       setPreviewKey(currentKey);
     } catch (caught) {
@@ -98,7 +115,7 @@ export default function App() {
     try {
       const next =
         action.kind === "apply"
-          ? await applyReplace(action.directory, needle, replacement)
+          ? await applyReplace(action.directory, needle, replacement, kinds)
           : await restoreBackups(action.directory);
       setReport(next);
       setPreviewKey(null);
@@ -163,20 +180,51 @@ export default function App() {
             <div className="field">
               <div className="field-label">
                 <span className="field-index">02</span>
+                <span>文件类型</span>
+                <span className="field-hint">可多选</span>
+              </div>
+              <div className="kind-group" role="group" aria-label="要处理的文件类型">
+                {TYPE_OPTIONS.map((option) => {
+                  const checked = kinds.includes(option.id);
+                  return (
+                    <label
+                      key={option.id}
+                      className={`kind-chip${checked ? " is-on" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleKind(option.id)}
+                      />
+                      <span className="kind-box" aria-hidden="true" />
+                      <span className="kind-name">{option.label}</span>
+                      <span className="kind-ext">.{option.id}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {kinds.length === 0 && (
+                <p className="field-error">至少选择一种文件类型</p>
+              )}
+            </div>
+
+            <div className="field">
+              <div className="field-label">
+                <span className="field-index">03</span>
                 <span>查找内容</span>
               </div>
               <input
                 type="text"
                 value={needle}
                 onChange={(event) => setNeedle(event.target.value)}
-                placeholder="例如：Java"
+                placeholder="例如：王小明"
                 autoFocus
               />
             </div>
 
             <div className="field">
               <div className="field-label">
-                <span className="field-index">03</span>
+                <span className="field-index">04</span>
                 <span>替换为</span>
                 <span className="field-hint">留空 = 删除</span>
               </div>
@@ -184,7 +232,7 @@ export default function App() {
                 type="text"
                 value={replacement}
                 onChange={(event) => setReplacement(event.target.value)}
-                placeholder="例如：Rust"
+                placeholder="例如：王小红"
               />
             </div>
 

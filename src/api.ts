@@ -3,6 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 
 export type Operation = "preview" | "replace" | "restore";
 export type EntryStatus = "previewed" | "written" | "restored" | "failed";
+export type FileKind = "txt" | "docx" | "xlsx";
 export type TaskPhase = "preview" | "apply" | "restore" | null;
 
 export interface ReportEntry {
@@ -37,16 +38,18 @@ export function previewReplace(
   directory: string,
   needle: string,
   replacement: string,
+  kinds: FileKind[],
 ): Promise<Report> {
-  return invoke<Report>("preview_replace", { directory, needle, replacement });
+  return invoke<Report>("preview_replace", { directory, needle, replacement, kinds });
 }
 
 export function applyReplace(
   directory: string,
   needle: string,
   replacement: string,
+  kinds: FileKind[],
 ): Promise<Report> {
-  return invoke<Report>("apply_replace", { directory, needle, replacement });
+  return invoke<Report>("apply_replace", { directory, needle, replacement, kinds });
 }
 
 export function restoreBackups(directory: string): Promise<Report> {

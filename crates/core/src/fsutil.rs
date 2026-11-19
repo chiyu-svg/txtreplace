@@ -3,33 +3,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::error::Error;
+use crate::kind::FileKind;
 
 /// 备份后缀：`a.txt` -> `a.txt.bak`。
 pub(crate) const BACKUP_SUFFIX: &str = ".bak";
-
-/// 支持处理的文件类型。
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Kind {
-    Text,
-    Docx,
-    Xlsx,
-}
-
-impl Kind {
-    pub(crate) fn from_path(path: &Path) -> Option<Self> {
-        let extension = path.extension()?.to_str()?;
-
-        if extension.eq_ignore_ascii_case("txt") {
-            Some(Self::Text)
-        } else if extension.eq_ignore_ascii_case("docx") {
-            Some(Self::Docx)
-        } else if extension.eq_ignore_ascii_case("xlsx") {
-            Some(Self::Xlsx)
-        } else {
-            None
-        }
-    }
-}
 
 pub(crate) fn ensure_dir(dir: &Path) -> Result<(), Error> {
     match fs::metadata(dir) {
@@ -39,9 +16,11 @@ pub(crate) fn ensure_dir(dir: &Path) -> Result<(), Error> {
     }
 }
 
-pub(crate) fn collect_target_files(dir: &Path) -> Result<Vec<PathBuf>, Error> {
+pub(crate) fn collect_target_files(dir: &Path, kinds: &[FileKind]) -> Result<Vec<PathBuf>, Error> {
     let mut files = Vec::new();
-    walk(dir, &mut files, &|path| Kind::from_path(path).is_some())?;
+    walk(dir, &mut files, &|path| {
+        FileKind::from_path(path).is_some_and(|kind| kinds.contains(&kind))
+    })?;
     files.sort();
     Ok(files)
 }

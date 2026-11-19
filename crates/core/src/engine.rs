@@ -7,8 +7,9 @@ use zip::write::{FileOptions, ZipWriter};
 
 use crate::error::Error;
 use crate::fsutil::{
-    Kind, backup_file, collect_backups, collect_target_files, ensure_dir, restore_target,
+    backup_file, collect_backups, collect_target_files, ensure_dir, restore_target,
 };
+use crate::kind::FileKind;
 use crate::report::{EntryStatus, Operation, Report, ReportEntry};
 
 /// 替换工作模式。
@@ -20,17 +21,26 @@ pub enum Mode {
     Apply,
 }
 
-/// 递归处理 `root` 下的 `.txt` / `.docx` / `.xlsx`。
+/// 递归处理 `root` 下指定类型的文件。
 ///
 /// 单个文件失败不会中断整体任务，失败信息会记录在报告里；
 /// 只有参数非法或根目录不可读时才返回 `Err`。
-pub fn replace(root: &Path, needle: &str, replacement: &str, mode: Mode) -> Result<Report, Error> {
+pub fn replace(
+    root: &Path,
+    needle: &str,
+    replacement: &str,
+    mode: Mode,
+    kinds: &[FileKind],
+) -> Result<Report, Error> {
     if needle.is_empty() {
         return Err(Error::EmptyNeedle);
     }
+    if kinds.is_empty() {
+        return Err(Error::NoFileKind);
+    }
     ensure_dir(root)?;
 
-    let files = collect_target_files(root)?;
+    let files = collect_target_files(root, kinds)?;
     let write = mode == Mode::Apply;
     let (operation, status) = if write {
         (Operation::Replace, EntryStatus::Written)
@@ -111,10 +121,10 @@ fn replace_in_file(
     replacement: &str,
     write: bool,
 ) -> Result<usize, Error> {
-    match Kind::from_path(path) {
-        Some(Kind::Text) => replace_in_text(path, needle, replacement, write),
-        Some(Kind::Docx) => replace_in_zip(path, needle, replacement, write, is_docx_part),
-        Some(Kind::Xlsx) => replace_in_zip(path, needle, replacement, write, is_xlsx_part),
+    match FileKind::from_path(path) {
+        Some(FileKind::Txt) => replace_in_text(path, needle, replacement, write),
+        Some(FileKind::Docx) => replace_in_zip(path, needle, replacement, write, is_docx_part),
+        Some(FileKind::Xlsx) => replace_in_zip(path, needle, replacement, write, is_xlsx_part),
         None => Ok(0),
     }
 }

@@ -309,6 +309,99 @@ form .field:first-child {
   color: #b4a998;
 }
 
+/* 文件类型多选 */
+
+.kind-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kind-chip {
+  position: relative;
+  flex: 1 1 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--paper-input);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.kind-chip:hover {
+  border-color: var(--ink);
+}
+
+.kind-chip.is-on {
+  background: #fffefb;
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.kind-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kind-box {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  border-radius: 1px;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.kind-chip.is-on .kind-box {
+  background: var(--accent);
+  border-color: var(--accent-ink);
+}
+
+.kind-chip.is-on .kind-box::after {
+  content: "";
+  width: 7px;
+  height: 4px;
+  border-left: 1.5px solid #fff8f3;
+  border-bottom: 1.5px solid #fff8f3;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.kind-chip input:focus-visible + .kind-box {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+}
+
+.kind-name {
+  white-space: nowrap;
+}
+
+.kind-ext {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--danger);
+}
+
 .form-actions {
   display: flex;
   gap: 10px;

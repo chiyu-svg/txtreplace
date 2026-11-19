@@ -6,8 +6,10 @@
 mod engine;
 mod error;
 mod fsutil;
+mod kind;
 mod report;
 
 pub use engine::{Mode, replace, restore};
 pub use error::Error;
+pub use kind::FileKind;
 pub use report::{EntryStatus, Operation, Report, ReportEntry};

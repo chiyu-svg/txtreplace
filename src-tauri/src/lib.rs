@@ -5,13 +5,14 @@
 
 use std::path::PathBuf;
 
-use txtreplace_core::{Error, Mode, Report};
+use txtreplace_core::{Error, FileKind, Mode, Report};
 
 #[tauri::command]
 async fn preview_replace(
     directory: String,
     needle: String,
     replacement: String,
+    kinds: Vec<FileKind>,
 ) -> Result<Report, String> {
     run_blocking(move || {
         txtreplace_core::replace(
@@ -19,6 +20,7 @@ async fn preview_replace(
             &needle,
             &replacement,
             Mode::Preview,
+            &kinds,
         )
     })
     .await
@@ -29,6 +31,7 @@ async fn apply_replace(
     directory: String,
     needle: String,
     replacement: String,
+    kinds: Vec<FileKind>,
 ) -> Result<Report, String> {
     run_blocking(move || {
         txtreplace_core::replace(
@@ -36,6 +39,7 @@ async fn apply_replace(
             &needle,
             &replacement,
             Mode::Apply,
+            &kinds,
         )
     })
     .await
