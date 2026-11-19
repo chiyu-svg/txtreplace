@@ -1,0 +1,11 @@
+[package]
+name = "txtreplace-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "批量替换 .txt / .docx / .xlsx 文本的核心逻辑，不依赖任何 UI 框架"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+zip = { workspace = true }

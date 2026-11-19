@@ -1,0 +1,20 @@
+[package]
+name = "txtreplace-desktop"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+description = "批量替换文档文本的桌面应用"
+
+[lib]
+name = "txtreplace_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { workspace = true }
+serde_json = "1"
+txtreplace-core = { workspace = true }
